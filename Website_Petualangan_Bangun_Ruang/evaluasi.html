@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evaluasi · Petualangan Bangun Ruang</title>
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+  <div class="quiz-wrap">
+    <div class="title-row"><div class="ico" style="background:var(--coral)">📝</div><div><div class="tag">Penilaian akhir topik</div><h1>Soal Evaluasi</h1></div></div>
+
+    <div id="ident" class="card">
+      <h2>✍️ Isi identitasmu dulu</h2>
+      <div class="form">
+        <label for="fNama">Nama lengkap</label><input id="fNama" type="text" maxlength="40" autocomplete="off">
+        <div class="grid g2">
+          <div><label for="fKelas">Kelas</label><input id="fKelas" type="text" maxlength="10" placeholder="contoh: V A"></div>
+          <div><label for="fAbsen">Nomor absen</label><input id="fAbsen" type="number" min="1" max="60"></div>
+        </div>
+      </div>
+      <div class="remember mt2"><b class="fd">📋 Petunjuk</b>
+        <ul style="padding-left:22px">
+          <li>Ada <b>10 soal</b>: 7 pilihan ganda dan 3 isian singkat.</li>
+          <li>Waktu mengerjakan <b>30 menit</b>.</li>
+          <li>Kamu boleh berpindah nomor soal. Jawaban benar atau salah baru terlihat setelah kamu menekan <b>Selesai</b>.</li>
+          <li>Nilai paling sedikit <b>75</b> untuk mendapat sertifikat Juara Ruang.</li>
+        </ul></div>
+      <div class="center mt2"><button class="btn sun big" id="startBtn">▶ Mulai Mengerjakan</button></div>
+    </div>
+
+    <div id="exam" class="hidden">
+      <div class="evalbar">
+        <span class="fd" style="font-size:1.25rem" id="who"></span>
+        <span class="clock" id="clock">⏱️ 30:00</span>
+      </div>
+      <div class="numnav" id="numnav"></div>
+      <div class="card mt2"><div class="row" style="justify-content:space-between"><span class="tag" id="qtype"></span></div><div id="qhost"></div></div>
+      <div class="row mt2" style="justify-content:space-between">
+        <button class="btn" id="prevBtn">◀ Sebelumnya</button>
+        <button class="btn coral" id="doneBtn">🏁 Selesai</button>
+        <button class="btn sun" id="nextBtn">Berikutnya ▶</button>
+      </div>
+    </div>
+
+    <div id="result" class="hidden"></div>
+  </div>
+</main>
+<script src="js/config.js"></script>
+<script src="js/common.js"></script>
+<script src="js/evaluasi.js"></script>
+</body>
+</html>

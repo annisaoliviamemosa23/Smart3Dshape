@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Petualangan Kubi · Petualangan Bangun Ruang</title>
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+  <div id="mapView">
+    <div class="title-row"><div class="ico" style="background:var(--grape)">🗺️</div><div><div class="tag">Games · Petualangan</div><h1>Peta Pulau Ruang</h1></div>
+      <a class="btn sm" href="games.html" style="margin-left:auto">◀ Games</a></div>
+    <div class="map" id="map">
+      <svg class="bg" viewBox="0 0 1600 900" preserveAspectRatio="none">
+        <path d="M-20 560 Q160 380 420 470 Q620 330 860 420 Q1080 260 1300 330 Q1500 260 1640 360 L1640 920 L-20 920Z" fill="#9BE7B0" stroke="#23264A" stroke-width="6"/>
+        <path d="M-20 700 Q260 610 520 670 Q840 560 1120 640 Q1380 580 1640 620 L1640 920 L-20 920Z" fill="#6CD08C" stroke="#23264A" stroke-width="6"/>
+        <path d="M190 700 C330 610 420 600 510 540 S720 460 830 405 S1030 330 1120 315 S1300 200 1380 150" fill="none" stroke="#fff" stroke-width="12" stroke-dasharray="6 26" stroke-linecap="round"/>
+        <g stroke="#23264A" stroke-width="5"><rect x="110" y="700" width="70" height="55" fill="#FFD23F"/><polygon points="100,705 145,660 190,705" fill="#FF6B6B"/><rect x="250" y="720" width="60" height="45" fill="#3BB8F0"/><polygon points="240,725 280,690 320,725" fill="#7B61FF"/></g>
+        <g stroke="#23264A" stroke-width="5"><polygon points="430,560 470,470 510,560" fill="#2FA866"/><polygon points="560,560 600,450 640,560" fill="#2FA866"/><polygon points="380,600 410,530 440,600" fill="#2FA866"/></g>
+        <path d="M770 470 Q830 380 890 470Z" fill="#5b5e85" stroke="#23264A" stroke-width="5"/>
+        <polygon points="1000,360 1120,170 1240,360" fill="#C9C3B5" stroke="#23264A" stroke-width="6"/><polygon points="1085,226 1120,170 1155,226 1135,215 1120,232 1100,215" fill="#fff" stroke="#23264A" stroke-width="4"/>
+        <g stroke="#23264A" stroke-width="6"><rect x="1330" y="110" width="150" height="110" fill="#FFD23F"/><rect x="1310" y="70" width="50" height="150" fill="#FF9F1C"/><rect x="1450" y="70" width="50" height="150" fill="#FF9F1C"/><polygon points="1300,72 1335,20 1370,72" fill="#7B61FF"/><polygon points="1440,72 1475,20 1510,72" fill="#7B61FF"/><rect x="1385" y="160" width="40" height="60" fill="#23264A"/></g>
+        <g fill="#fff" stroke="#23264A" stroke-width="5"><path d="M120 120 Q100 80 140 78 Q150 40 200 52 Q230 30 260 62 Q300 60 290 100 Q300 125 270 125Z"/><path d="M760 90 Q745 60 775 58 Q785 30 820 40 Q845 25 865 50 Q895 48 888 78 Q895 98 872 98Z"/></g>
+      </svg>
+      <div id="levels"></div>
+    </div>
+    <div class="grid g3 mt2">
+      <div class="card bg-sun"><h3>📜 Cerita</h3><p class="mt1">Penyihir Datar mengubah semua bangunan Kota Ruang menjadi gambar pipih! Bantu Kubi menjelajahi 5 tempat untuk mengembalikan bentuk 3D kota.</p></div>
+      <div class="card bg-coral"><h3>❤️ Aturan</h3><p class="mt1">Setiap level kamu punya 3 nyawa. Salah menjawab, nyawa berkurang. Sisa nyawa menjadi bintangmu!</p></div>
+      <div class="card bg-mint"><h3>🎁 Hadiah Kubi</h3><p class="mt1" id="rewards"></p></div>
+    </div>
+  </div>
+
+  <div id="lvlView" class="hidden">
+    <div class="lvlbar"><h3 id="lvlName"></h3><div class="hearts" id="hearts"></div><span class="pill" style="color:var(--navy)" id="lvlProg"></span><button class="btn sm" id="quitBtn">🗺️ Peta</button></div>
+    <div id="bossBox"></div>
+    <div class="card"><div id="lvlQ"></div></div>
+  </div>
+</main>
+<script src="js/common.js"></script>
+<script src="js/bank.js"></script>
+<script>
+mountChrome('games.html');
+
+const LV = [
+  null,
+  { name: 'Desa Kenal Ruang', icon: '🏘️', mpos: [24, 86], pos: [11, 76], n: 5, gen: () => Gen.unsur(), story: 'Penduduk desa lupa nama-nama bagian bangunan mereka. Bantu mereka mengenali <b>sisi, rusuk, dan titik sudut</b>!' },
+  { name: 'Hutan Jaring-jaring', icon: '🌲', mpos: [68, 71], pos: [32, 58], n: 5, gen: () => Gen.net(), story: 'Jembatan hutan terputus! Pilih <b>jaring-jaring</b> yang tepat supaya bisa dilipat menjadi batu jembatan.' },
+  { name: 'Gua Kubus Satuan', icon: '🕳️', mpos: [30, 55], pos: [52, 45], n: 5, gen: () => Gen.kubusSatuan(), story: 'Pintu gua tertutup! Hitung <b>kubus satuan</b> di setiap peti harta agar pintunya terbuka.' },
+  { name: 'Gunung Volume', icon: '⛰️', mpos: [68, 38], pos: [71, 33], n: 5, gen: () => Gen.volume(false), story: 'Hitung <b>volume</b> setiap batu loncatan. Kalau salah hitung, batunya tenggelam!' },
+  { name: 'Istana Juara', icon: '🏰', mpos: [36, 17], pos: [88, 20], boss: 6, story: 'Inilah <b>Penyihir Datar</b>! Jawab benar 6 soal untuk mengalahkannya dan mengembalikan Kota Ruang!' }
+];
+const REWARD = { 1: ['topi', '🎩 Topi Penjelajah'], 3: ['jubah', '🦸 Jubah Pemberani'], 5: ['mahkota', '👑 Mahkota Juara'] };
+const adv = () => Store.get('adv', { unlocked: 1, stars: {} });
+
+const isMob = () => matchMedia('(max-width:640px)').matches;
+const P = l => isMob() ? l.mpos : l.pos;
+function drawMap() {
+  const a = adv();
+  $('#levels').innerHTML = LV.slice(1).map((l, k) => {
+    const n = k + 1, open = n <= a.unlocked, st = a.stars[n] || 0;
+    return `<a class="lvl" href="#" data-n="${n}" style="left:${P(l)[0]}%;top:${P(l)[1]}%">
+      <span class="btn ${st ? 'mint' : open ? 'sun' : ''}" style="${open ? '' : 'background:#ddd'}">${open ? (st ? '✔' : n) : '🔒'}</span>
+      <span class="name">${l.icon} ${l.name}</span>${st ? `<span class="st">${'⭐'.repeat(st)}</span>` : ''}</a>`;
+  }).join('');
+  const cur = Math.min(a.unlocked, 5), p = P(LV[cur]);
+  $('#levels').insertAdjacentHTML('beforeend', kubiSVG({ acc: kubiAcc(), cls: 'kubi-map' }).replace('class="kubi-map"', `class="kubi-map" style="left:${p[0]}%;top:${p[1]}%"`));
+  $$('.lvl').forEach(el => el.onclick = e => {
+    e.preventDefault(); const n = +el.dataset.n;
+    if (n > adv().unlocked) { Sfx.play('bad'); toast('🔒 Selesaikan level sebelumnya dulu ya!'); return; }
+    Sfx.play('click'); intro(n);
+  });
+  $('#rewards').innerHTML = Object.entries(REWARD).map(([n, r]) => `${a.stars[n] ? '✅' : '⬜'} ${r[1]} (level ${n})`).join('<br>');
+}
+
+let L, lvN, hearts, qIdx, cur, bossHP, attempts, usedTexts;
+function intro(n) {
+  popup({ title: `${LV[n].icon} Level ${n}: ${LV[n].name}`, html: `<p>${LV[n].story}</p>`, mood: 'wow', buttons: [{ label: '◀ Batal' }, { label: '▶ Ayo Mulai!', cls: 'sun', onClick: () => play(n) }] });
+}
+function play(n) {
+  lvN = n; L = LV[n]; hearts = 3; qIdx = 0; bossHP = L.boss || 0; usedTexts = new Set();
+  $('#mapView').classList.add('hidden'); $('#lvlView').classList.remove('hidden');
+  $('#lvlName').textContent = `${L.icon} Level ${n}: ${L.name}`;
+  $('#bossBox').innerHTML = L.boss ? `<div class="boss"><span class="wiz" id="wiz">🧙‍♂️</span><div style="flex:1"><b class="fd" style="font-size:1.3rem">Penyihir Datar</b><div class="hpbar"><div id="hp" style="width:100%"></div></div></div></div>` : '';
+  next();
+}
+function drawHUD() {
+  $('#hearts').innerHTML = [0, 1, 2].map(k => HEART.replace('<svg', `<svg class="${k < hearts ? '' : 'lost'}"`)).join('');
+  $('#lvlProg').textContent = L.boss ? `Sisa kekuatan penyihir: ${bossHP}` : `Soal ${Math.min(qIdx + 1, L.n)} dari ${L.n}`;
+  if (L.boss) $('#hp').style.width = (bossHP / L.boss * 100) + '%';
+}
+function bossQ() { return pick([() => Gen.tampak(), () => Gen.tampak(), () => Gen.net(), () => Gen.volume(true), () => Gen.luas(true), () => Gen.cerita(), () => Gen.unsur()])(); }
+function fresh(make) { let q; for (let t = 0; t < 12; t++) { q = make(); if (!usedTexts.has(q.text) || q.vis) break; } usedTexts.add(q.text); return q; }
+function next() {
+  attempts = 0;
+  cur = fresh(L.boss ? bossQ : L.gen);
+  drawHUD();
+  renderQuestion($('#lvlQ'), cur, onAns);
+}
+function onAns(ok, v, ui) {
+  if (ok) {
+    Sfx.play(L.boss ? 'hit' : 'ok');
+    if (ui.btn) { ui.all.forEach(b => b.disabled = true); ui.btn.classList.add('ok'); }
+    if (ui.b) ui.b.disabled = true;
+    if (L.boss) { bossHP--; const w = $('#wiz'); w.classList.remove('hit'); void w.offsetWidth; w.classList.add('hit'); drawHUD(); if (bossHP <= 0) return setTimeout(win, 700); }
+    else { qIdx++; if (qIdx >= L.n) return setTimeout(win, 600); }
+    toast('✔ ' + pick(PRAISE));
+    setTimeout(next, 900);
+  } else {
+    Sfx.play('bad'); hearts--; attempts++; drawHUD();
+    if (ui.btn) { ui.btn.classList.add('bad'); ui.btn.disabled = true; }
+    if (hearts <= 0) return setTimeout(lose, 500);
+    const reveal = attempts >= 2 || L.boss;
+    if (reveal) {
+      const ansTxt = cur.type === 'num' ? `${fmt(cur.answer)} ${cur.unit || ''}` : (cur.options[cur.answer].t || `pilihan ${'ABCD'[cur.answer]}`);
+      popup({ kind: 'bad', title: 'Aduh, nyawa berkurang!', html: `<p>Jawaban yang benar: <b>${ansTxt}</b></p><p>${cur.hint || ''}</p>`, buttons: [{ label: 'Lanjut ▶', cls: 'sun', onClick: () => { if (!L.boss) qIdx++; if (!L.boss && qIdx >= L.n) win(); else next(); } }] });
+    } else {
+      popup({ kind: 'bad', title: 'Ups, Belum Tepat! ⚠️', html: `<p>Nyawamu berkurang satu. <b>Petunjuk:</b> ${cur.hint || 'Coba pikirkan lagi.'}</p>`, buttons: [{ label: '🔁 Coba Lagi', cls: 'sun' }] });
+    }
+  }
+}
+function win() {
+  const a = adv(), st = hearts, first = !a.stars[lvN];
+  a.stars[lvN] = Math.max(a.stars[lvN] || 0, st);
+  if (lvN === a.unlocked && lvN < 5) a.unlocked = lvN + 1;
+  if (lvN === 5) a.unlocked = 5;
+  Store.set('adv', a); addStars(st * 5);
+  if (lvN === 5) addBadge('penjelajah');
+  Sfx.play('win'); confetti(180);
+  const rw = REWARD[lvN] && first ? `<p class="remember mt1">🎁 Hadiah baru untuk Kubi: <b>${REWARD[lvN][1]}</b>!</p>` : '';
+  popup({ kind: 'ok', title: lvN === 5 ? 'Penyihir Datar Kalah! 🏆' : 'Level Selesai! 🎉', acc: kubiAcc(),
+    html: `<div class="stars3">${[1, 2, 3].map(k => STAR.replace('<svg', `<svg class="${k <= st ? '' : 'dim'}"`)).join('')}</div><p class="center">Kamu mendapat ⭐ ${st * 5} bintang.${lvN === 5 ? ' Kota Ruang kembali berbentuk 3D. Kamu adalah <b>Penjelajah Ruang</b> sejati!' : ''}</p>${rw}`,
+    buttons: [{ label: '🔁 Main Lagi', onClick: () => play(lvN) }, { label: '🗺️ Ke Peta', cls: 'sun', onClick: backMap }] });
+}
+function lose() {
+  popup({ kind: 'bad', title: 'Nyawamu Habis!', html: '<p>Tidak apa-apa, penjelajah hebat pernah gagal juga. Pelajari petunjuknya, lalu coba lagi!</p>',
+    buttons: [{ label: '🗺️ Ke Peta', onClick: backMap }, { label: '🔁 Coba Lagi', cls: 'sun', onClick: () => play(lvN) }] });
+}
+function backMap() { $('#lvlView').classList.add('hidden'); $('#mapView').classList.remove('hidden'); drawMap(); }
+$('#quitBtn').onclick = () => popup({ title: 'Kembali ke peta?', html: '<p>Kemajuan di level ini akan hilang.</p>', buttons: [{ label: 'Tidak' }, { label: 'Ya, ke peta', cls: 'sun', onClick: backMap }] });
+drawMap();
+let _mob = isMob(); addEventListener('resize', () => { if (isMob() !== _mob) { _mob = isMob(); if (!$('#mapView').classList.contains('hidden')) drawMap(); } });
+</script>
+</body>
+</html>

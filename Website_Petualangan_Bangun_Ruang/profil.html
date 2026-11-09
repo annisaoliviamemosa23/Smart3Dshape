@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Profil Developer · Petualangan Bangun Ruang</title>
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+  <!-- ===== Ubah isi profil di bawah ini sesuai data Anda ===== -->
+  <section class="prof-head">
+    <img class="photo" src="img/foto-developer.jpg" alt="Foto developer" onerror="this.onerror=null;this.src='img/foto-default.svg'">
+    <div style="flex:1;min-width:260px">
+      <div class="tag">👋 Kenalan dengan pembuatnya</div>
+      <h1>Annisa Olivia Memosa</h1>
+      <p class="mt1">Mahasiswa Program Doktor Pendidikan Dasar<br><b>Universitas Negeri Malang</b></p>
+    </div>
+  </section>
+
+  <div class="grid g2 mt3">
+    <div class="card bg-sky"><h3>🎓 Riwayat Pendidikan</h3>
+      <ul class="mt1" style="padding-left:24px">
+        <li>S3 Pendidikan Dasar, Universitas Negeri Malang</li>
+        <li>(S2: program studi dan kampus)</li>
+        <li>(S1: program studi dan kampus)</li>
+      </ul></div>
+    <div class="card bg-sun"><h3>💬 Pesan untuk Kalian</h3>
+      <p class="mt1">"Matematika ada di sekitar kita, dari dadu sampai kardus di rumah. Teruslah bertanya dan mencoba, ya! Setiap kesalahan adalah langkah menuju juara."</p></div>
+    <div class="card bg-grape"><h3>👨‍🏫 Dosen Pengampu</h3>
+      <p class="mt1">(Nama dosen pengampu mata kuliah)</p></div>
+    <div class="card bg-mint"><h3>📬 Kontak</h3>
+      <p class="mt1">✉️ (alamat email)<br>📷 (akun Instagram, jika ada)</p></div>
+  </div>
+
+  <div class="card mt2"><h3>📚 Referensi</h3>
+    <ul class="mt1" style="padding-left:24px">
+      <li>Buku Matematika untuk SD/MI Kelas V Kurikulum Merdeka, Kemendikbudristek.</li>
+      <li>Capaian Pembelajaran Matematika Fase C, Kurikulum Merdeka.</li>
+      <li>Maskot Kubi, ilustrasi, dan efek suara dibuat sendiri untuk website ini.</li>
+      <li>Huruf Fredoka dan Nunito (SIL Open Font License).</li>
+    </ul></div>
+
+  <div class="card mt2 center"><div id="kubiP" style="display:flex;justify-content:center"></div>
+    <p class="fd" style="font-size:1.5rem">"Terima kasih sudah belajar bersamaku! Sampai jumpa di Dunia Bangun Ruang!" 🚀</p></div>
+</main>
+<script src="js/common.js"></script>
+<script>
+mountChrome('profil.html');
+$('#kubiP').innerHTML = kubiSVG({ acc: kubiAcc() }).replace('<svg', '<svg style="width:120px;height:150px"');
+</script>
+</body>
+</html>

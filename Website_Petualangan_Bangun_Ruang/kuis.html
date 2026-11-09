@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kuis · Petualangan Bangun Ruang</title>
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+  <div class="quiz-wrap">
+    <div class="title-row"><div class="ico" style="background:var(--orange)">❓</div><div><div class="tag">Latihan dengan umpan balik langsung</div><h1>Kuis Bangun Ruang</h1></div></div>
+
+    <div id="intro" class="card center">
+      <div id="kubiIntro" style="display:flex;justify-content:center"></div>
+      <h2>Siap menjawab 10 soal?</h2>
+      <p class="mt1">Jawaban benar dapat ⭐ 10 bintang. Kalau salah, Kubi memberi petunjuk dan kamu boleh mencoba sekali lagi.</p>
+      <p id="best" class="mt1 fd" style="font-size:1.3rem;color:var(--grape)"></p>
+      <button class="btn sun big mt2" id="startBtn">▶ Mulai Kuis</button>
+    </div>
+
+    <div id="play" class="hidden">
+      <div class="row" style="justify-content:space-between;font-weight:800;font-size:1.2rem"><span id="qnum"></span><span>⭐ <span id="qscore">0</span></span></div>
+      <div class="progress mt1"><div id="bar"></div></div>
+      <div class="card mt2" id="qcard"><div id="qhost"></div></div>
+    </div>
+
+    <div id="result" class="hidden card center"></div>
+  </div>
+</main>
+<script src="js/common.js"></script>
+<script>
+mountChrome('kuis.html');
+$('#kubiIntro').innerHTML = kubiSVG({ acc: kubiAcc() }).replace('<svg', '<svg style="width:150px;height:180px"');
+const best = Store.get('kuisBest', null);
+if (best != null) $('#best').textContent = `Skor terbaikmu: ${best} dari 100`;
+
+const CUBE = isoSVG([{ x: 0, y: 0, z: 0, dx: 2, dy: 2, dz: 2, c: '#3BB8F0' }], { size: 40 });
+const BALOK = isoSVG([{ x: 0, y: 0, z: 0, dx: 3, dy: 1.6, dz: 1.8, c: '#06C793' }], { size: 38 });
+const SOAL = [
+  { text: 'Banyak <b>sisi</b> kubus adalah ...', vis: CUBE, o: ['6', '4', '8', '12'], hint: 'Hitung semua permukaan datar: atas, bawah, depan, belakang, kiri, kanan.', ex: 'Kubus punya 6 sisi.', topik: 'Unsur' },
+  { text: 'Banyak <b>rusuk</b> balok adalah ...', vis: BALOK, o: ['12', '6', '8', '10'], hint: 'Rusuk adalah garis pertemuan dua sisi. Ada 4 panjang, 4 lebar, 4 tinggi.', ex: 'Balok punya 12 rusuk.', topik: 'Unsur' },
+  { text: 'Banyak <b>titik sudut</b> kubus adalah ...', vis: CUBE, o: ['8', '6', '10', '12'], hint: 'Hitung pojok di bagian atas, lalu di bagian bawah.', ex: 'Kubus punya 8 titik sudut: 4 di atas dan 4 di bawah.', topik: 'Unsur' },
+  { text: 'Benda di bawah ini yang berbentuk <b>kubus</b> adalah ...', o: ['🎲 dadu', '🥫 kaleng', '⚽ bola', '✏️ kotak pensil'], hint: 'Cari benda yang semua sisinya persegi sama besar.', ex: 'Dadu berbentuk kubus.', topik: 'Unsur' },
+  { text: 'Volume kubus dengan rusuk <b>5 cm</b> adalah ...', o: ['125 cm³', '15 cm³', '25 cm³', '150 cm³'], hint: 'Volume kubus = s × s × s, bukan s + s + s.', ex: '5 × 5 × 5 = 125 cm³.', topik: 'Volume' },
+  { text: 'Volume balok berukuran <b>6 cm × 4 cm × 3 cm</b> adalah ...', o: ['72 cm³', '13 cm³', '24 cm³', '108 cm³'], hint: 'Kalikan panjang, lebar, dan tinggi.', ex: '6 × 4 × 3 = 72 cm³.', topik: 'Volume' },
+  { text: 'Sisi kubus berbentuk ...', vis: CUBE, o: ['persegi', 'persegi panjang', 'segitiga', 'lingkaran'], hint: 'Semua rusuk kubus sama panjang.', ex: 'Karena semua rusuknya sama panjang, sisi kubus berbentuk persegi.', topik: 'Unsur' },
+  { text: 'Balok ini tersusun dari berapa <b>kubus satuan</b>?', vis: isoSVG(unitCubes(4, 3, 2, '#7B61FF'), { size: 28 }), o: ['24', '9', '12', '20'], hint: 'Hitung satu lapis dulu (4 × 3), lalu kalikan banyak lapis.', ex: '4 × 3 × 2 = 24 kubus satuan.', topik: 'Volume' },
+  { text: 'Perbedaan kubus dan balok terletak pada ...', o: ['panjang rusuknya', 'banyak sisinya', 'banyak rusuknya', 'banyak titik sudutnya'], hint: 'Banyak sisi, rusuk, dan titik sudutnya sama. Bandingkan ukurannya.', ex: 'Rusuk kubus sama panjang, rusuk balok tidak semuanya sama.', topik: 'Unsur' },
+  { text: 'Kolam berukuran <b>10 m × 5 m × 2 m</b>. Volumenya adalah ...', o: ['100 m³', '17 m³', '50 m³', '160 m³'], hint: 'Soal cerita tetap memakai V = p × l × t.', ex: '10 × 5 × 2 = 100 m³.', topik: 'Volume' }
+];
+
+let qs, i, score, tries, wrongTopics;
+function build() {
+  return SOAL.map(s => { const opts = shuffle(s.o.map((t, k) => ({ t, ok: k === 0 }))); return { ...s, type: 'mc', options: opts, answer: opts.findIndex(o => o.ok) }; });
+}
+function start() {
+  qs = build(); i = 0; score = 0; wrongTopics = {};
+  $('#intro').classList.add('hidden'); $('#result').classList.add('hidden'); $('#play').classList.remove('hidden');
+  show();
+}
+function show() {
+  tries = 0;
+  $('#qnum').textContent = `Soal ${i + 1} dari ${qs.length}`;
+  $('#bar').style.width = (i / qs.length * 100) + '%';
+  $('#qscore').textContent = score;
+  renderQuestion($('#qhost'), qs[i], answer);
+}
+function next() { i++; if (i < qs.length) show(); else finish(); }
+function answer(ok, idx, ui) {
+  const q = qs[i];
+  if (ok) {
+    ui.all.forEach(b => b.disabled = true); ui.btn.classList.add('ok');
+    const pts = tries === 0 ? 10 : 5; score += pts; addStars(pts);
+    $('#qscore').textContent = score;
+    Sfx.play('ok'); confetti(70);
+    popup({ kind: 'ok', title: pick(PRAISE) + ' 🎉', html: `<p>${q.ex}</p><p class="fd" style="color:var(--orange);font-size:1.4rem">+${pts} bintang ⭐</p>`, buttons: [{ label: i + 1 < qs.length ? 'Soal Berikutnya ▶' : 'Lihat Hasil 🏁', cls: 'sun', onClick: next }] });
+  } else {
+    tries++; Sfx.play('bad');
+    ui.btn.classList.add('bad'); ui.btn.disabled = true;
+    $('#qcard').classList.remove('shake'); void $('#qcard').offsetWidth; $('#qcard').classList.add('shake');
+    wrongTopics[q.topik] = (wrongTopics[q.topik] || 0) + 1;
+    if (tries < 2) {
+      popup({ kind: 'bad', title: 'Ups, Belum Tepat! ⚠️', html: `<p>Jangan menyerah! <b>Petunjuk:</b> ${q.hint}</p>`, buttons: [{ label: '💡 Lihat Materi', onClick: () => window.open('materi.html#' + (q.topik === 'Volume' ? 'volume' : 'kubus'), '_blank') , keep: false }, { label: '🔁 Coba Lagi', cls: 'sun' }] });
+    } else {
+      ui.all.forEach(b => b.disabled = true); ui.all[q.answer].classList.add('ok');
+      popup({ kind: 'bad', title: 'Belum Berhasil, Tidak Apa-apa!', html: `<p>Jawaban yang benar: <b>${q.options[q.answer].t}</b></p><p><b>Pembahasan:</b> ${q.ex}</p>`, buttons: [{ label: i + 1 < qs.length ? 'Soal Berikutnya ▶' : 'Lihat Hasil 🏁', cls: 'sun', onClick: next }] });
+    }
+  }
+}
+function finish() {
+  $('#bar').style.width = '100%';
+  const nStar = score >= 80 ? 3 : score >= 50 ? 2 : 1;
+  const prev = Store.get('kuisBest', 0); if (score > prev) Store.set('kuisBest', score);
+  if (score >= 80) addBadge('kuis');
+  Sfx.play('win'); confetti();
+  const weak = Object.entries(wrongTopics).sort((a, b) => b[1] - a[1])[0];
+  $('#play').classList.add('hidden');
+  const r = $('#result'); r.classList.remove('hidden');
+  r.innerHTML = `<h2>🏁 Kuis Selesai!</h2>
+    <div class="stars3">${[1, 2, 3].map(k => STAR.replace('<svg', `<svg class="${k <= nStar ? '' : 'dim'}"`)).join('')}</div>
+    <div class="score-big" style="color:var(--mint)">${score}</div><p>dari 100 poin</p>
+    <p class="mt1">${score >= 80 ? 'Luar biasa! Kamu siap mengerjakan Evaluasi.' : score >= 50 ? 'Bagus! Sedikit lagi kamu jadi jago.' : 'Ayo semangat! Pelajari lagi materinya, lalu coba kuis sekali lagi.'}</p>
+    ${weak ? `<p class="mt1 remember">💡 Saran Kubi: ulangi materi <b>${weak[0]}</b> karena kamu paling banyak salah di bagian itu.</p>` : ''}
+    <div class="row mt2" style="justify-content:center"><button class="btn" onclick="start()">🔁 Ulangi Kuis</button>${weak ? `<a class="btn sky" href="materi.html#${weak[0] === 'Volume' ? 'volume' : 'kubus'}">📘 Ulangi Materi</a>` : ''}<a class="btn sun" href="games.html">🎮 Main Games ▶</a></div>`;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+$('#startBtn').onclick = () => { Sfx.play('click'); start(); };
+</script>
+</body>
+</html>

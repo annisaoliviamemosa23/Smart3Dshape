@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Petualangan Bangun Ruang · Matematika Kelas V</title>
+<meta name="description" content="Media pembelajaran interaktif bangun ruang kubus dan balok untuk siswa kelas V SD.">
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+  <section class="hero">
+    <div>
+      <div class="tag" id="sapa">Selamat datang, Penjelajah Cilik! 🌟</div>
+      <h1 class="mt1">Ayo Berpetualang di Dunia <span>Bangun Ruang!</span></h1>
+      <p class="mt1">Kenali kubus dan balok di sekitarmu, kumpulkan bintang, dan jadilah <b>Juara Ruang</b>!</p>
+      <div class="row mt2">
+        <a class="btn sun big" href="materi.html">▶ Mulai Belajar</a>
+        <a class="btn" href="games.html">🎮 Main Dulu</a>
+      </div>
+    </div>
+    <div class="kubi-wrap" id="kubiHero">
+      <div class="bubble" style="left:0;top:0">Halo, aku Kubi! 👋</div>
+    </div>
+  </section>
+
+  <h2 class="mt3">🔎 Bangun ruang ada di sekitarmu!</h2>
+  <p>Ketuk kartu untuk melihat bentuk bangun ruangnya.</p>
+  <div class="grid g4 mt1" id="benda"></div>
+
+  <div class="grid g3 mt3">
+    <div class="card bg-sun">
+      <h3>⭐ Bintangmu</h3>
+      <div class="fd" style="font-size:3.2rem;font-weight:700"><span class="stars-count">0</span></div>
+      <p>Kumpulkan bintang dari Materi, Kuis, dan Games.</p>
+    </div>
+    <div class="card bg-mint">
+      <h3>💡 Tahukah kamu?</h3>
+      <p id="fakta" class="mt1"></p>
+    </div>
+    <div class="card bg-grape">
+      <h3>🏅 Lencanamu</h3>
+      <div class="badges mt1" id="badges"></div>
+    </div>
+  </div>
+
+  <h2 class="mt3">🧭 Peta Belajarmu</h2>
+  <div class="grid g3 mt1">
+    <a class="card game-card" href="materi.html" style="text-decoration:none"><h3>📘 1. Materi</h3><p>Pelajari kubus, balok, jaring-jaring, volume, dan tampak.</p></a>
+    <a class="card game-card" href="kuis.html" style="text-decoration:none"><h3>❓ 2. Kuis</h3><p>Latihan 10 soal. Kubi akan memberi tahu benar atau salahnya.</p></a>
+    <a class="card game-card" href="games.html" style="text-decoration:none"><h3>🎮 3. Games</h3><p>Petualangan di Pulau Ruang dan Game Show bersama teman.</p></a>
+    <a class="card game-card" href="evaluasi.html" style="text-decoration:none"><h3>📝 4. Evaluasi</h3><p>Uji kemampuanmu dan dapatkan sertifikat Juara Ruang.</p></a>
+    <a class="card game-card" href="profil.html" style="text-decoration:none"><h3>👩‍🏫 Profil</h3><p>Kenalan dengan pembuat website ini.</p></a>
+    <a class="card game-card" href="panduan.html" style="text-decoration:none"><h3>🧭 Panduan</h3><p>Cara memakai website untuk siswa, guru, dan orang tua.</p></a>
+  </div>
+</main>
+<script src="js/common.js"></script>
+<script>
+const CUBE = '#3BB8F0';
+mountChrome('index.html');
+$('#kubiHero').insertAdjacentHTML('beforeend', kubiSVG({ acc: kubiAcc() }));
+
+const BENDA = [
+  ['🎲', 'Dadu', 'kubus', 'cube'], ['🧊', 'Es batu', 'kubus', 'cube'], ['🧃', 'Kotak susu', 'balok', 'balok'], ['📦', 'Kardus', 'balok', 'balok'],
+  ['🧱', 'Batu bata', 'balok', 'balok'], ['🎁', 'Kotak kado', 'kubus', 'cube'], ['📚', 'Buku tebal', 'balok', 'balok'], ['🟫', 'Rubik', 'kubus', 'cube']
+];
+$('#benda').innerHTML = BENDA.map(b => {
+  const shape = b[3] === 'cube' ? isoSVG([{ x: 0, y: 0, z: 0, dx: 2, dy: 2, dz: 2, c: CUBE }], { size: 30 }) : isoSVG([{ x: 0, y: 0, z: 0, dx: 3, dy: 1.5, dz: 1.8, c: '#06C793' }], { size: 28 });
+  return `<div class="flip" tabindex="0" role="button" aria-label="${b[1]}"><div class="inner">
+    <div class="face"><div class="emo">${b[0]}</div><b>${b[1]}</b><span>ketuk aku</span></div>
+    <div class="face back"><div style="height:100px;display:flex;align-items:center">${shape}</div><b>${b[1]}</b><span>berbentuk <b style="font-size:1.2rem">${b[2]}</b></span></div>
+  </div></div>`;
+}).join('');
+$$('.flip').forEach(f => { const t = () => { f.classList.toggle('on'); Sfx.play('click'); }; f.onclick = t; f.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); t(); } }; });
+
+const FAKTA = [
+  'Kubus punya 12 rusuk yang semuanya sama panjang!',
+  'Ada 11 bentuk jaring-jaring kubus yang berbeda. Bisakah kamu menemukan semuanya?',
+  'Dadu adalah kubus. Jumlah titik pada dua sisi yang berhadapan selalu 7.',
+  '1 liter sama dengan 1.000 cm³, yaitu volume kubus dengan rusuk 10 cm.',
+  'Kubus adalah balok istimewa: panjang, lebar, dan tingginya sama.',
+  'Di setiap titik sudut kubus, ada 3 rusuk dan 3 sisi yang bertemu.',
+  'Batu bata berbentuk balok supaya mudah disusun rapat menjadi dinding.'
+];
+$('#fakta').textContent = FAKTA[new Date().getDate() % FAKTA.length];
+
+const own = Store.get('badges', []);
+$('#badges').innerHTML = Object.entries(BADGES).map(([k, b]) => `<span class="badge ${own.includes(k) ? '' : 'off'}">${b.icon} ${b.name}</span>`).join('');
+
+function sapa() { const n = playerName(); if (n) $('#sapa').textContent = `Halo, ${n}! Siap berpetualang? 🌟`; }
+sapa();
+if (!playerName()) {
+  setTimeout(() => {
+    let nm;
+    const save = () => { const v = nm && nm.value; if (v && v.trim()) { Store.set('name', v.trim()); sapa(); } };
+    const close = popup({
+      title: 'Halo! Aku Kubi',
+      html: `<p>Siapa namamu, Penjelajah Cilik?</p><input id="nm" type="text" maxlength="30" placeholder="Tulis namamu" style="font:800 1.4rem Nunito;border:3px solid #23264A;border-radius:14px;padding:10px 14px;width:100%;margin-top:10px">`,
+      buttons: [{ label: 'Nanti saja' }, { label: 'Simpan ✔', cls: 'sun', onClick: save }]
+    });
+    nm = $('#nm');
+    nm.addEventListener('keydown', e => { if (e.key === 'Enter') { save(); close(); } });
+    setTimeout(() => nm.focus(), 80);
+  }, 700);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Materi · Petualangan Bangun Ruang</title>
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+  <div class="title-row"><div class="ico" style="background:var(--sky)">📘</div><div><div class="tag">Bangun Ruang Kelas V</div><h1>Materi Pembelajaran</h1></div></div>
+  <div class="tabs" id="tabs"></div>
+
+  <!-- ===== TUJUAN ===== -->
+  <section data-tab="tujuan">
+    <div class="card bg-sky">
+      <h2>🏁 Capaian Pembelajaran (Fase C)</h2>
+      <p class="mt1">Pada akhir Fase C, peserta didik dapat mengonstruksi dan mengurai bangun ruang (kubus, balok, dan gabungannya), melakukan visualisasi spasial (tampak depan, atas, dan samping), serta membandingkan karakteristik antarbangun ruang.</p>
+    </div>
+    <div class="card bg-sun mt2">
+      <h2>🎯 Setelah belajar, kamu bisa...</h2>
+      <div class="tp-list mt1" id="tplist"></div>
+      <p class="mt1" style="font-size:1.05rem">Tanda ✔ hijau muncul setelah kamu menjawab benar semua soal <b>Cek Pemahaman</b> di setiap bagian.</p>
+    </div>
+    <div class="row mt2" style="justify-content:space-between">
+      <div class="row"><span id="kubiT"></span><div class="card flat fd" style="padding:10px 16px;font-size:1.3rem">Siap? Ayo kenalan dengan kubus!</div></div>
+      <button class="btn sun" data-go="kubus">Lanjut ▶</button>
+    </div>
+  </section>
+
+  <!-- ===== KUBUS ===== -->
+  <section data-tab="kubus" class="hidden">
+    <div class="grid g2">
+      <div class="card">
+        <h2 style="color:var(--sky)">🧊 Mengenal Kubus</h2>
+        <div class="stage" id="stKubus"></div>
+        <p class="hint-drag">👆 Geser untuk memutar kubus</p>
+        <div class="modebtns mt1" data-for="stKubus">
+          <button data-m="">Biasa</button><button data-m="faces">Sisi</button><button data-m="edges">Rusuk</button><button data-m="points">Titik Sudut</button>
+        </div>
+      </div>
+      <div>
+        <div class="facts">
+          <div>🟦 Kubus punya <b>6 sisi</b> berbentuk <b>persegi</b> yang sama besar.</div>
+          <div>📏 Kubus punya <b>12 rusuk</b> yang <b>sama panjang</b>.</div>
+          <div>📍 Kubus punya <b>8 titik sudut</b>.</div>
+          <div>🎲 Contoh: dadu, es batu, rubik, kotak kado.</div>
+        </div>
+        <div class="remember mt2"><b class="fd">📌 Ingat ya!</b><br><b>Sisi</b> = permukaan datar. <b>Rusuk</b> = garis pertemuan dua sisi. <b>Titik sudut</b> = pojok tempat rusuk-rusuk bertemu.</div>
+      </div>
+    </div>
+    <div class="check mt2" data-check="kubus"></div>
+  </section>
+
+  <!-- ===== BALOK ===== -->
+  <section data-tab="balok" class="hidden">
+    <div class="grid g2">
+      <div class="card">
+        <h2 style="color:var(--mint)">📦 Mengenal Balok</h2>
+        <div class="stage" id="stBalok"></div>
+        <p class="hint-drag">👆 Geser untuk memutar balok</p>
+        <div class="modebtns mt1" data-for="stBalok">
+          <button data-m="">Biasa</button><button data-m="faces">Sisi</button><button data-m="edges">Rusuk</button><button data-m="points">Titik Sudut</button>
+        </div>
+      </div>
+      <div>
+        <div class="facts">
+          <div>🟩 Balok punya <b>6 sisi</b>, berupa <b>3 pasang</b> sisi yang sama besar.</div>
+          <div>📏 Balok punya <b>12 rusuk</b>: 4 panjang, 4 lebar, 4 tinggi.</div>
+          <div>📍 Balok punya <b>8 titik sudut</b>.</div>
+          <div>📦 Contoh: kardus, kotak susu, batu bata, lemari.</div>
+        </div>
+        <div class="card flat mt2">
+          <h3>⚖️ Kubus atau Balok?</h3>
+          <table class="tb mt1">
+            <tr><th></th><th>Kubus</th><th>Balok</th></tr>
+            <tr><td>Sisi</td><td>6 (persegi)</td><td>6 (persegi panjang/persegi)</td></tr>
+            <tr><td>Rusuk</td><td>12, sama panjang</td><td>12, ada 3 ukuran</td></tr>
+            <tr><td>Titik sudut</td><td>8</td><td>8</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="check mt2" data-check="balok"></div>
+  </section>
+
+  <!-- ===== JARING-JARING ===== -->
+  <section data-tab="jaring" class="hidden">
+    <div class="grid g2">
+      <div class="card">
+        <h2 style="color:var(--orange)">✂️ Jaring-jaring Kubus</h2>
+        <div class="net-stage"><div class="net-world" id="netWorld"></div></div>
+        <div class="row" style="justify-content:center"><button class="btn orange" id="foldBtn">📦 Lipat jadi kubus</button></div>
+      </div>
+      <div>
+        <div class="facts">
+          <div>✂️ Jaring-jaring adalah <b>bangun ruang yang dibuka</b> menjadi bangun datar.</div>
+          <div>🧩 Jaring-jaring kubus terdiri dari <b>6 persegi</b>.</div>
+          <div>🔢 Ada <b>11 bentuk</b> jaring-jaring kubus yang berbeda!</div>
+        </div>
+        <div class="card flat mt2">
+          <h3>Contoh bentuk lain</h3>
+          <div class="row mt1" id="netSamples" style="justify-content:space-around"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card mt2">
+      <h2>📐 Luas Permukaan</h2>
+      <p>Luas permukaan = jumlah luas semua sisi = luas jaring-jaringnya.</p>
+      <div class="grid g2 mt1">
+        <div class="remember"><b class="fd">🧊 Kubus</b><br><span class="formula">L = 6 × s × s</span>
+          <div class="slider mt1">s <input type="range" min="1" max="12" value="4" id="lsS"><span class="v" id="lsSv">4</span></div>
+          <p id="lsKubus" class="fd" style="font-size:1.35rem"></p></div>
+        <div class="remember"><b class="fd">📦 Balok</b><br><span class="formula">L = 2 × (p×l + p×t + l×t)</span>
+          <div class="slider mt1">p <input type="range" min="1" max="12" value="6" id="lsP"><span class="v" id="lsPv">6</span></div>
+          <div class="slider">l <input type="range" min="1" max="12" value="3" id="lsL"><span class="v" id="lsLv">3</span></div>
+          <div class="slider">t <input type="range" min="1" max="12" value="2" id="lsT"><span class="v" id="lsTv">2</span></div>
+          <p id="lsBalok" class="fd" style="font-size:1.35rem"></p></div>
+      </div>
+    </div>
+    <div class="check mt2" data-check="jaring"></div>
+  </section>
+
+  <!-- ===== VOLUME ===== -->
+  <section data-tab="volume" class="hidden">
+    <div class="grid g2">
+      <div>
+        <div class="iso-box" id="volIso"></div>
+        <p class="center mt1 fd" style="font-size:1.6rem" id="volCount"></p>
+      </div>
+      <div class="card">
+        <h2 style="color:var(--grape)">🧮 Volume</h2>
+        <p>Volume adalah <b>banyak kubus satuan</b> yang dapat mengisi bangun ruang.</p>
+        <div class="row mt1"><label class="fd" style="font-size:1.25rem"><input type="checkbox" id="volCube" style="width:22px;height:22px;accent-color:var(--grape)"> Jadikan kubus (semua sama)</label></div>
+        <div class="slider mt1">p <input type="range" min="1" max="6" value="4" id="vP"><span class="v" id="vPv">4</span></div>
+        <div class="slider">l <input type="range" min="1" max="6" value="3" id="vL"><span class="v" id="vLv">3</span></div>
+        <div class="slider">t <input type="range" min="1" max="6" value="2" id="vT"><span class="v" id="vTv">2</span></div>
+        <div class="row mt1"><button class="btn grape" id="fillBtn">🧊 Isi kubus satuan</button></div>
+        <div class="remember mt2"><b class="fd">📌 Ingat ya!</b><br>🧊 Kubus: <span class="formula">V = s × s × s</span><br>📦 Balok: <span class="formula">V = p × l × t</span><br>Satuan volume: cm³, m³. 1 liter = 1.000 cm³.</div>
+      </div>
+    </div>
+    <div class="check mt2" data-check="volume"></div>
+  </section>
+
+  <!-- ===== TAMPAK ===== -->
+  <section data-tab="tampak" class="hidden">
+    <div class="card">
+      <h2 style="color:var(--coral)">👀 Tampak Depan, Atas, dan Samping</h2>
+      <p>Lihat susunan kubus dari tiga arah. Tebak dulu, lalu ketuk kartu untuk melihat jawabannya!</p>
+      <div class="row mt1" id="tpPreset"></div>
+      <div class="grid g2 mt2" style="align-items:center">
+        <div class="iso-box" id="tpIso"></div>
+        <div class="views" id="tpViews"></div>
+      </div>
+    </div>
+    <div class="check mt2" data-check="tampak"></div>
+  </section>
+</main>
+<script src="js/common.js"></script>
+<script src="js/bank.js"></script>
+<script src="js/materi.js"></script>
+</body>
+</html>

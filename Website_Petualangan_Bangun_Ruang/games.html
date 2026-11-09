@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Games · Petualangan Bangun Ruang</title>
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+  <div class="title-row"><div class="ico" style="background:var(--grape)">🎮</div><div><div class="tag">Belajar sambil bermain</div><h1>Pilih Permainanmu!</h1></div></div>
+  <div class="grid g2">
+    <a class="card game-card" href="petualangan.html">
+      <div class="art" style="background:#7FD3F7" id="art1"></div>
+      <h2>🗺️ Petualangan Kubi di Pulau Ruang</h2>
+      <p>Bantu Kubi melewati 5 tempat ajaib dan kalahkan Penyihir Datar! Main sendiri, kumpulkan bintang dan hadiah untuk Kubi.</p>
+      <span class="btn grape" style="align-self:flex-start">▶ Mulai Petualangan</span>
+    </a>
+    <a class="card game-card" href="gameshow.html">
+      <div class="art" style="background:radial-gradient(circle,#4B3BB5,#23264A)"><div class="fd" style="font-size:2.4rem;font-weight:700;color:#FFD23F;text-shadow:3px 3px 0 #000;text-align:center">⭐ SIAPA JAGO<br>RUANG? ⭐</div></div>
+      <h2>🎤 Game Show "Siapa Jago Ruang?"</h2>
+      <p>Lomba cerdas cermat untuk 2 sampai 4 tim di kelas. Putar roda, jawab cepat, pakai bantuan, dan naik ke podium!</p>
+      <span class="btn sun" style="align-self:flex-start">▶ Mulai Game Show</span>
+    </a>
+  </div>
+</main>
+<script src="js/common.js"></script>
+<script>
+mountChrome('games.html');
+$('#art1').innerHTML = kubiSVG({ acc: kubiAcc() }).replace('<svg', '<svg style="height:160px;width:140px"') + '<div style="font-size:4rem">🏝️</div>';
+</script>
+</body>
+</html>

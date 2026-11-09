@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game Show Siapa Jago Ruang? · Petualangan Bangun Ruang</title>
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+  <div class="row" style="justify-content:space-between;margin-bottom:14px"><div class="tag">Games · Game Show</div><a class="btn sm" href="games.html">◀ Games</a></div>
+  <div class="gs" id="gs"></div>
+</main>
+<script src="js/common.js"></script>
+<script src="js/bank.js"></script>
+<script>
+mountChrome('games.html');
+const CATS = [
+  { n: 'Unsur', c: '#FF6B6B', g: () => Gen.unsur() },
+  { n: 'Jaring-jaring', c: '#FFD23F', g: () => Math.random() < .6 ? Gen.net() : Gen.luas(true) },
+  { n: 'Volume', c: '#3BB8F0', g: () => Gen.volume(true) },
+  { n: 'Tampak', c: '#06C793', g: () => Gen.tampak() },
+  { n: 'Soal Cerita', c: '#FF9F1C', g: () => Gen.cerita() }
+];
+const TEAM_COL = ['#FF6B6B', '#3BB8F0', '#06C793', '#7B61FF'];
+const DEF_NAMES = ['Tim Kubus', 'Tim Balok', 'Tim Rusuk', 'Tim Sisi'];
+const gs = $('#gs');
+let cfg = { mode: 'kelompok', n: 3, rounds: 3, names: DEF_NAMES.slice() };
+let teams, turn, round, gold, rot = 0, timer, tLeft, cur, catIdx, answered;
+
+function setup() {
+  clearInterval(timer);
+  gs.innerHTML = `<h1>⭐ SIAPA JAGO RUANG? ⭐</h1>
+  <div class="card setup mt2" style="color:var(--navy);max-width:760px;margin-left:auto;margin-right:auto">
+    <label>Mode permainan</label><div class="seg" id="sMode"><button data-v="kelompok">👥 Kelompok di kelas</button><button data-v="sendiri">🤖 Sendiri lawan Kubi Robot</button></div>
+    <div id="sTeams"></div>
+    <label class="mt1">Banyak soal untuk setiap tim (belum termasuk Soal Emas)</label><div class="seg" id="sRounds">${[3, 4, 5].map(v => `<button data-v="${v}">${v} soal</button>`).join('')}</div>
+    <p class="mt1" style="font-size:1.1rem">Benar <b>+10</b>, benar dengan cepat (sisa waktu 10 detik atau lebih) <b>+15</b>. Babak terakhir: <b>Soal Emas +30</b>. Setiap tim punya 3 bantuan: 50:50, Bantuan Kubi, dan Tambah Waktu.</p>
+    <div class="center mt2"><button class="btn sun big" id="go">▶ Mulai Game Show!</button></div>
+  </div>`;
+  const drawTeams = () => {
+    $$('#sMode button').forEach(b => b.classList.toggle('on', b.dataset.v === cfg.mode));
+    $$('#sRounds button').forEach(b => b.classList.toggle('on', +b.dataset.v === cfg.rounds));
+    if (cfg.mode === 'sendiri') {
+      $('#sTeams').innerHTML = `<label class="mt1">Namamu</label><input type="text" id="nm0" maxlength="20" value="${esc(playerName() || 'Aku')}">`;
+    } else {
+      $('#sTeams').innerHTML = `<label class="mt1">Banyak tim</label><div class="seg" id="sN">${[2, 3, 4].map(v => `<button data-v="${v}" class="${v === cfg.n ? 'on' : ''}">${v} tim</button>`).join('')}</div>
+        <div class="grid g2 mt1">${Array.from({ length: cfg.n }, (_, i) => `<input type="text" id="nm${i}" maxlength="20" value="${esc(cfg.names[i])}" style="border-left:14px solid ${TEAM_COL[i]}">`).join('')}</div>`;
+      $$('#sN button').forEach(b => b.onclick = () => { saveNames(); cfg.n = +b.dataset.v; drawTeams(); });
+    }
+  };
+  const saveNames = () => { for (let i = 0; i < 4; i++) { const e = $('#nm' + i); if (e && cfg.mode === 'kelompok') cfg.names[i] = e.value.trim() || DEF_NAMES[i]; } };
+  $$('#sMode button').forEach(b => b.onclick = () => { saveNames(); cfg.mode = b.dataset.v; Sfx.play('click'); drawTeams(); });
+  $$('#sRounds button').forEach(b => b.onclick = () => { cfg.rounds = +b.dataset.v; Sfx.play('click'); drawTeams(); });
+  $('#go').onclick = () => {
+    saveNames();
+    const life = () => ({ fifty: true, hint: true, time: true });
+    teams = cfg.mode === 'sendiri'
+      ? [{ name: ($('#nm0').value.trim() || 'Aku'), c: TEAM_COL[0], s: 0, life: life() }, { name: 'Kubi Robot 🤖', c: TEAM_COL[3], s: 0, life: life(), robot: true }]
+      : cfg.names.slice(0, cfg.n).map((name, i) => ({ name, c: TEAM_COL[i], s: 0, life: life() }));
+    turn = 0; round = 0; gold = false; Sfx.play('win'); spinScreen();
+  };
+  drawTeams();
+}
+
+function scoreboard() {
+  return `<div class="teams">${teams.map((t, i) => `<div class="team ${i === turn ? 'cur' : ''}" style="background:${t.c}">${esc(t.name)}<span class="pts">${t.s}</span></div>`).join('')}</div>`;
+}
+function wheelHTML() {
+  const seg = 360 / CATS.length;
+  const grad = CATS.map((c, i) => `${c.c} ${i * seg}deg ${(i + 1) * seg}deg`).join(',');
+  return `<div class="wheel-wrap"><div class="wheel-pin"></div><div class="wheel" id="wheel" style="background:conic-gradient(${grad});transform:rotate(${rot}deg)">
+    ${CATS.map((c, i) => `<div class="wheel-label" style="transform:rotate(${i * seg + seg / 2 - 90}deg) translate(38px,-10px)">${c.n}</div>`).join('')}</div></div>`;
+}
+function spinScreen() {
+  clearInterval(timer);
+  const t = teams[turn];
+  gs.innerHTML = `<h1 style="font-size:2.2rem">${gold ? '🥇 BABAK SOAL EMAS 🥇' : `⭐ Babak ${round + 1} dari ${cfg.rounds} ⭐`}</h1>
+    <div class="mt1">${scoreboard()}</div>
+    <p class="center mt2 fd" style="font-size:1.6rem">Giliran <b style="color:var(--sun)">${esc(t.name)}</b>! ${gold ? 'Soal bernilai 30 poin!' : 'Putar roda untuk memilih kategori.'}</p>
+    <div class="mt2">${wheelHTML()}</div>
+    <div class="center mt2"><button class="btn sun big" id="spin">🎡 Putar Roda</button></div>`;
+  $('#spin').onclick = spin;
+  if (t.robot) { $('#spin').disabled = true; setTimeout(spin, 1100); }
+}
+function spin() {
+  $('#spin').disabled = true;
+  catIdx = rnd(0, CATS.length - 1);
+  const seg = 360 / CATS.length, c = catIdx * seg + seg / 2;
+  rot = Math.ceil(rot / 360) * 360 + 360 * 5 + (360 - c);
+  Sfx.play('spin');
+  $('#wheel').style.transform = `rotate(${rot}deg)`;
+  setTimeout(() => { Sfx.play('ok'); toast(`🎯 Kategori: <b>${CATS[catIdx].n}</b>`); setTimeout(question, 700); }, 3300);
+}
+function question() {
+  const t = teams[turn];
+  cur = CATS[catIdx].g(); answered = false; tLeft = 20;
+  gs.innerHTML = `<div class="row" style="justify-content:space-between"><span class="chip" style="color:var(--navy);background:${CATS[catIdx].c}">${CATS[catIdx].n}</span><span class="fd" style="font-size:1.3rem">Giliran: <b style="color:var(--sun)">${esc(t.name)}</b> ${gold ? '· 🥇 Soal Emas' : ''}</span></div>
+    <div class="mt1">${scoreboard()}</div>
+    <div class="row mt2" style="align-items:flex-start;flex-wrap:nowrap"><div class="timer" id="tm">20</div><div class="qbox" id="qb"></div></div>
+    <div id="qa" class="mt2"></div>
+    <div class="lifes mt2" id="lf">
+      <button data-l="fifty" ${t.life.fifty && !t.robot ? '' : 'disabled'}>✂️ 50:50</button>
+      <button data-l="hint" ${t.life.hint && !t.robot ? '' : 'disabled'}>🧊 Bantuan Kubi</button>
+      <button data-l="time" ${t.life.time && !t.robot ? '' : 'disabled'}>⏱️ Tambah Waktu</button>
+    </div>`;
+  const tmp = document.createElement('div');
+  renderQuestion(tmp, cur, onAns, { noFocus: true });
+  $('#qb').innerHTML = $('.qtext', tmp).innerHTML;
+  const vis = $('.qvis', tmp); if (vis) $('#qb').insertAdjacentHTML('beforeend', `<div class="qvis" style="background:#fff">${vis.innerHTML}</div>`);
+  $('#qa').appendChild($('.ans', tmp));
+  $$('#lf button').forEach(b => b.onclick = () => life(b.dataset.l, b));
+  timer = setInterval(() => {
+    tLeft--; const e = $('#tm'); if (!e) return clearInterval(timer);
+    e.textContent = tLeft; e.classList.toggle('low', tLeft <= 5);
+    if (tLeft <= 5 && tLeft > 0) Sfx.play('tick');
+    if (tLeft <= 0) { clearInterval(timer); if (!answered) reveal(false, true); }
+  }, 1000);
+  if (t.robot) setTimeout(() => {
+    if (answered) return;
+    const ok = Math.random() < .65, opts = $$('#qa .opt');
+    const wrong = opts.map((_, i) => i).filter(i => i !== cur.answer);
+    const i = ok ? cur.answer : pick(wrong);
+    opts[i] && opts[i].click();
+  }, rnd(3000, 6000));
+}
+function life(kind, btn) {
+  const t = teams[turn]; if (!t.life[kind] || answered) return;
+  t.life[kind] = false; btn.disabled = true; Sfx.play('click');
+  if (kind === 'fifty') {
+    const opts = $$('#qa .opt'); const wrong = shuffle(opts.map((_, i) => i).filter(i => i !== cur.answer));
+    wrong.slice(0, Math.max(1, opts.length - 2)).forEach(i => { opts[i].classList.add('out'); opts[i].disabled = true; });
+  } else if (kind === 'hint') {
+    toast(`🧊 Kubi berbisik: ${cur.hint || 'Baca soalnya pelan-pelan!'}`);
+    const d = document.createElement('div'); d.className = 'card mt1'; d.style.color = 'var(--navy)'; d.innerHTML = `<b class="fd">🧊 Bantuan Kubi:</b> ${cur.hint || 'Baca soalnya pelan-pelan!'}`; $('#qa').appendChild(d);
+  } else { tLeft += 10; $('#tm').textContent = tLeft; $('#tm').classList.remove('low'); }
+}
+function onAns(ok, i, ui) {
+  if (answered) return;
+  ui.all.forEach(b => b.disabled = true);
+  ui.btn.classList.add(ok ? 'ok' : 'bad');
+  reveal(ok, false);
+}
+function reveal(ok, timeout) {
+  answered = true; clearInterval(timer);
+  const t = teams[turn];
+  const opts = $$('#qa .opt'); opts.forEach(b => b.disabled = true); if (opts[cur.answer]) opts[cur.answer].classList.add('ok');
+  let pts = 0;
+  if (ok) { pts = gold ? 30 : (tLeft >= 10 ? 15 : 10); t.s += pts; Sfx.play('ok'); confetti(60); }
+  else Sfx.play('bad');
+  const ansTxt = cur.options[cur.answer].t || `gambar ${'ABCD'[cur.answer]}`;
+  setTimeout(() => popup({
+    kind: ok ? 'ok' : 'bad', title: ok ? `${pick(PRAISE)} +${pts}` : timeout ? 'Waktu Habis! ⏰' : 'Ups, Belum Tepat!',
+    html: `<p><b>${esc(t.name)}</b> ${ok ? `mendapat <b>${pts} poin</b>!` : 'belum mendapat poin.'}</p>${ok ? '' : `<p>Jawaban yang benar: <b>${ansTxt}</b></p>`}`,
+    buttons: [{ label: 'Lanjut ▶', cls: 'sun', onClick: advance }]
+  }), 600);
+}
+function advance() {
+  turn++;
+  if (turn >= teams.length) { turn = 0; if (gold) return podium(); round++; if (round >= cfg.rounds) gold = true; }
+  spinScreen();
+}
+function podium() {
+  clearInterval(timer);
+  const sorted = teams.slice().sort((a, b) => b.s - a.s);
+  const order = [sorted[1], sorted[0], sorted[2]].filter(Boolean);
+  const H = { 0: 170, 1: 120, 2: 80 };
+  const top = sorted[0], tie = sorted[1] && sorted[1].s === top.s;
+  if (!top.robot) { addStars(10); addBadge('gameshow'); }
+  Sfx.play('win'); confetti(220); setTimeout(() => confetti(160), 1500);
+  gs.innerHTML = `<h1>🏆 PODIUM JUARA 🏆</h1>
+    <p class="center fd mt1" style="font-size:1.8rem">${tie ? 'Hasil seri! Semua hebat!' : `Selamat <span style="color:var(--sun)">${esc(top.name)}</span>!`}</p>
+    <div class="podium">${order.map(t => { const r = sorted.indexOf(t); return `<div class="p"><span>${r === 0 ? '👑 ' : ''}${esc(t.name)}</span><span>${t.s} poin</span><div class="blk" style="height:${H[r]}px;background:${['#FFD23F', '#C0C0C0', '#E5A06B'][r]}">${r + 1}</div></div>`; }).join('')}</div>
+    ${sorted.length > 3 ? `<p class="center mt1">Peringkat 4: ${esc(sorted[3].name)} (${sorted[3].s} poin)</p>` : ''}
+    <div class="center mt2"><button class="btn sun big" id="again">🔁 Main Lagi</button></div>`;
+  $('#again').onclick = setup;
+}
+setup();
+</script>
+</body>
+</html>

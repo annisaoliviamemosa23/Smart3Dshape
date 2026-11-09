@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panduan · Petualangan Bangun Ruang</title>
+<link rel="icon" href="img/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main>
+  <div class="title-row"><div class="ico" style="background:var(--mint)">🧭</div><div><div class="tag">Cara memakai website</div><h1>Panduan</h1></div></div>
+
+  <div class="grid g3">
+    <div class="card bg-sun"><h3>🧒 Untuk Siswa</h3>
+      <ol class="mt1" style="padding-left:24px">
+        <li>Tulis namamu di Beranda.</li>
+        <li>Pelajari <b>Materi</b> dan jawab Cek Pemahaman.</li>
+        <li>Latihan di <b>Kuis</b>.</li>
+        <li>Bermain <b>Games</b>.</li>
+        <li>Kerjakan <b>Evaluasi</b> dan unduh sertifikatmu.</li>
+      </ol></div>
+    <div class="card bg-sky"><h3>👨‍👩‍👧 Untuk Orang Tua</h3>
+      <p class="mt1">Dampingi anak saat belajar. Ajak anak mencari benda berbentuk kubus dan balok di rumah, lalu hitung volumenya bersama. Tombol 🔊 di pojok atas dapat mematikan suara.</p></div>
+    <div class="card bg-grape"><h3>👩‍🏫 Untuk Guru</h3>
+      <p class="mt1">Gunakan <b>Game Show</b> lewat proyektor untuk lomba antarkelompok. Rekap nilai evaluasi ada di bawah. Kemajuan siswa tersimpan di peramban (browser) perangkat masing-masing.</p></div>
+  </div>
+
+  <div class="card mt3">
+    <div class="row" style="justify-content:space-between"><h2>📊 Rekap Nilai Evaluasi (perangkat ini)</h2>
+      <div class="row"><button class="btn sm sun" id="csvBtn">⬇️ Unduh CSV</button><button class="btn sm" id="clrBtn">🗑️ Hapus Rekap</button></div></div>
+    <p class="mt1" style="font-size:1.05rem">Daftar ini berisi hasil evaluasi yang dikerjakan di perangkat ini. Untuk mengumpulkan nilai dari banyak perangkat sekaligus, sambungkan ke Google Sheets (lihat langkah di bawah).</p>
+    <div style="overflow:auto" class="mt1"><table class="tb" id="rekap"></table></div>
+  </div>
+
+  <details class="card mt2">
+    <summary>🔗 Menyambungkan nilai evaluasi ke Google Sheets (opsional)</summary>
+    <ol class="mt1" style="padding-left:24px">
+      <li>Buat Google Sheets baru. Pilih menu <b>Ekstensi → Apps Script</b>.</li>
+      <li>Hapus isi yang ada, lalu tempel kode di bawah ini dan simpan.</li>
+      <li>Klik <b>Terapkan → Deployment baru</b>, pilih jenis <b>Aplikasi web</b>, atur akses ke <b>Siapa saja</b>, lalu klik Terapkan. Salin URL yang muncul.</li>
+      <li>Buka file <b>js/config.js</b>, tempel URL itu pada <code>window.SHEET_URL = "..."</code>, lalu unggah ulang website ke Netlify.</li>
+    </ol>
+<pre class="code">function doPost(e) {
+  var sh = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var d = JSON.parse(e.postData.contents);
+  if (sh.getLastRow() === 0) sh.appendRow(['Waktu','Nama','Kelas','Absen','Nilai','Benar','Status','Durasi (menit)','Detail soal 1-10']);
+  sh.appendRow([d.waktu, d.nama, d.kelas, d.absen, d.nilai, d.benar, d.tuntas, d.durasi_menit, "'" + d.detail]);
+  return ContentService.createTextOutput('ok');
+}</pre>
+    <p class="mt1" style="font-size:1.05rem">Kolom "Detail soal" berisi 10 angka (1 = benar, 0 = salah) sesuai urutan soal pada kisi-kisi: 1 (TP 5.2), 2 (5.1), 3 (5.3), 4 (5.4), 5 (5.6), 6 (5.3), 7 (5.5), 8 (5.4), 9 (5.3), 10 (5.6).</p>
+  </details>
+
+  <details class="card mt2">
+    <summary>♻️ Mengatur ulang kemajuan siswa di perangkat ini</summary>
+    <p class="mt1">Menghapus nama, bintang, lencana, dan kemajuan petualangan di perangkat ini (rekap nilai tidak ikut terhapus).</p>
+    <button class="btn coral mt1" id="resetBtn">♻️ Atur Ulang Kemajuan</button>
+  </details>
+</main>
+<script src="js/common.js"></script>
+<script>
+mountChrome('');
+function drawRekap() {
+  const r = Store.get('results', []);
+  $('#rekap').innerHTML = r.length
+    ? `<tr><th>No</th><th>Waktu</th><th>Nama</th><th>Kelas</th><th>Absen</th><th>Nilai</th><th>Status</th><th>Detail (1-10)</th></tr>` + r.map((x, i) => `<tr><td>${i + 1}</td><td>${esc(x.waktu)}</td><td>${esc(x.nama)}</td><td>${esc(x.kelas)}</td><td>${esc(x.absen)}</td><td><b>${x.nilai}</b></td><td>${x.tuntas}</td><td style="font-family:monospace">${x.detail}</td></tr>`).join('')
+    : '<tr><td>Belum ada hasil evaluasi di perangkat ini.</td></tr>';
+}
+drawRekap();
+$('#csvBtn').onclick = () => {
+  const r = Store.get('results', []); if (!r.length) return toast('Belum ada data.');
+  const head = ['Waktu', 'Nama', 'Kelas', 'Absen', 'Nilai', 'Benar', 'Status', 'Durasi (menit)', 'Detail'];
+  const rows = r.map(x => [x.waktu, x.nama, x.kelas, x.absen, x.nilai, x.benar, x.tuntas, x.durasi_menit, "'" + x.detail]);
+  const csv = [head, ...rows].map(a => a.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(';')).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv' })); a.download = 'rekap-evaluasi-bangun-ruang.csv'; a.click();
+};
+$('#clrBtn').onclick = () => popup({ kind: 'bad', title: 'Hapus rekap?', html: '<p>Semua hasil evaluasi di perangkat ini akan dihapus.</p>', buttons: [{ label: 'Batal' }, { label: 'Ya, hapus', cls: 'coral', onClick: () => { Store.set('results', []); drawRekap(); } }] });
+$('#resetBtn').onclick = () => popup({ kind: 'bad', title: 'Atur ulang kemajuan?', html: '<p>Nama, bintang, lencana, dan kemajuan petualangan akan dihapus.</p>', buttons: [{ label: 'Batal' }, { label: 'Ya, atur ulang', cls: 'coral', onClick: () => { ['name', 'stars', 'badges', 'tpDone', 'adv', 'kuisBest', 'evalSession'].forEach(k => Store.set(k, null)); try { ['name', 'stars', 'badges', 'tpDone', 'adv', 'kuisBest', 'evalSession'].forEach(k => localStorage.removeItem('br_' + k)); } catch (e) {} location.reload(); } }] });
+</script>
+</body>
+</html>
